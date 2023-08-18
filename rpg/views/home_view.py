@@ -119,11 +119,12 @@ class HomeView(arcade.View):
         self.camera_gui.use()
         self.home_button_bar.draw()
         self.button_list.draw()
-        if self.inventory and self.inventory.open:
+        if self.inventory:
             self.inventory.draw()
         
-        if self.vault and self.vault.open:
+        if self.vault:
             self.vault.draw()
+
 
         self.pointer.draw()
         # self.pointer.draw_hit_box(arcade.color.RED, line_thickness=1)
@@ -139,39 +140,34 @@ class HomeView(arcade.View):
     def handle_inventory_event(self, button):
         """Handle the action when the inventory button is clicked."""
         
-        # Close the vault if it's open
-        if self.vault and self.vault.open:
-            self.vault.open = False
+        # Close the vault if it exists
+        if self.vault:
+            self.vault = None
             self.vault_button.pressed = False  # Also un-press the vault button
 
+        # Toggle the existence of the inventory
         if self.inventory:
-            self.inventory.open = not self.inventory.open
-            if not self.inventory.open:
-                button.pressed = False
+            self.inventory = None
+            button.pressed = False
         else:
-            self.inventory = Inventory(filename="assets/gui/inventory.png", 
-                                    center_x=self.window.width, 
-                                    center_y=self.window.height/2)
-            self.inventory.open = True
+            self.inventory = Inventory(filename="assets/gui/inventory.png", center_x=self.window.width, center_y=self.window.height)
             self.storage_list.append(self.inventory)
 
     def handle_vault_event(self, button):
         """Handle the action when the vault button is clicked."""
         
-        # Close the inventory if it's open
-        if self.inventory and self.inventory.open:
-            self.inventory.open = False
+        # Close the inventory if it exists
+        if self.inventory:
+            self.inventory = None
             self.inventory_button.pressed = False  # Also un-press the inventory button
 
+        # Toggle the existence of the vault
         if self.vault:
-            self.vault.open = not self.vault.open
-            if not self.vault.open:
-                button.pressed = False
+            self.vault = None
+            button.pressed = False
         else:
             self.vault = Vault(filename="assets/gui/vault.png", 
-                            center_x=self.window.width, 
-                            center_y=self.window.height/2)
-            self.vault.open = True
+                               center_x=self.window.width, center_y=self.window.height)
             self.storage_list.append(self.vault)
             
     def button_press_check_event_launch(self):
