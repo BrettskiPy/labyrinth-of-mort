@@ -49,7 +49,7 @@ class HomeButton(arcade.Sprite):
 class HomeView(arcade.View):
     def __init__(self):
         super().__init__()
-        arcade.set_background_color(arcade.color.AMAZON)
+
         self.home_button_bar = HomeButtonBar(
             filename="assets/gui/button_bar/home_button_bar.png", offset_x=30
         )
@@ -100,8 +100,8 @@ class HomeView(arcade.View):
         self.player = Player(filename="assets/player/base/human.png")
         self.inventory = None
         self.vault = None
-        self.storage_list = []
 
+        self.default_background = True
         self.background = arcade.load_texture("assets/background/forest.png")
 
         self.camera_sprites = arcade.Camera(DEFAULT_SCREEN_WIDTH, DEFAULT_SCREEN_HEIGHT)
@@ -121,7 +121,8 @@ class HomeView(arcade.View):
         self.button_list.draw()
         if self.inventory:
             self.inventory.draw()
-        
+            self.inventory.debug_draw_inventory_slots()
+            
         if self.vault:
             self.vault.draw()
 
@@ -137,48 +138,50 @@ class HomeView(arcade.View):
                 other_button.pressed = False
             button.pressed = True
 
-    def handle_inventory_event(self, button):
-        """Handle the action when the inventory button is clicked."""
-        
-        # Close the vault if it exists
-        if self.vault:
-            self.vault = None
-            self.vault_button.pressed = False  # Also un-press the vault button
+    def close_all_storage(self):
+        self.inventory = None
+        self.vault = None
 
-        # Toggle the existence of the inventory
+    def handle_inventory_event(self):
         if self.inventory:
             self.inventory = None
-            button.pressed = False
         else:
+            self.close_all_storage()  
             self.inventory = Inventory(filename="assets/gui/inventory.png", center_x=self.window.width, center_y=self.window.height)
-            self.storage_list.append(self.inventory)
 
-    def handle_vault_event(self, button):
-        """Handle the action when the vault button is clicked."""
-        
-        # Close the inventory if it exists
-        if self.inventory:
-            self.inventory = None
-            self.inventory_button.pressed = False  # Also un-press the inventory button
-
-        # Toggle the existence of the vault
+    def handle_vault_event(self):
         if self.vault:
             self.vault = None
-            button.pressed = False
         else:
+            self.close_all_storage()
             self.vault = Vault(filename="assets/gui/vault.png", 
                                center_x=self.window.width, center_y=self.window.height)
-            self.storage_list.append(self.vault)
+    
+    def handle_dungeon_event(self):
+        if self.default_background:
+            self.close_all_storage()
+            self.background = arcade.load_texture("assets/background/dungeon_grouping.png")
+            self.default_background = False
+        else:
+            self.background = arcade.load_texture("assets/background/forest.png")
+            self.default_background = True
             
     def button_press_check_event_launch(self):
+
         if button := arcade.check_for_collision_with_list(self.pointer, self.button_list):
             clicked_button = button[0]
             self.toggle_button_press(clicked_button)
-
+            
             if clicked_button.reference == 'inventory':
-                self.handle_inventory_event(clicked_button)
+                self.handle_inventory_event()
             elif clicked_button.reference == 'vault':
-                self.handle_vault_event(clicked_button)
+                self.handle_vault_event()
+
+            if self.default_background is False and clicked_button.reference != 'dungeon':
+                self.handle_dungeon_event()
+            elif clicked_button.reference == 'dungeon':
+                self.handle_dungeon_event()
+                
 
     def on_mouse_press(self, x, y, button, modifiers):
         self.button_press_check_event_launch()
