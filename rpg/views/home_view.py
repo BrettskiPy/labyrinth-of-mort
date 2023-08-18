@@ -1,7 +1,7 @@
 import arcade
 import pointer
 from player import Player
-from inventory import Inventory
+from storage import Inventory, Vault
 
 DEFAULT_SCREEN_WIDTH = 800
 DEFAULT_SCREEN_HEIGHT = 600
@@ -99,6 +99,8 @@ class HomeView(arcade.View):
         self.pointer = pointer.Pointer(filename="assets/pointers/gold_arrow.png")
         self.player = Player(filename="assets/player/base/human.png")
         self.inventory = None
+        self.vault = None
+        self.storage_list = []
 
         self.background = arcade.load_texture("assets/background/forest.png")
 
@@ -119,30 +121,68 @@ class HomeView(arcade.View):
         self.button_list.draw()
         if self.inventory and self.inventory.open:
             self.inventory.draw()
+        
+        if self.vault and self.vault.open:
+            self.vault.draw()
+
         self.pointer.draw()
         # self.pointer.draw_hit_box(arcade.color.RED, line_thickness=1)
 
+    def toggle_button_press(self, button):
+        if button.pressed:
+            button.pressed = False
+        else:
+            for other_button in self.button_list:
+                other_button.pressed = False
+            button.pressed = True
+
+    def handle_inventory_event(self, button):
+        """Handle the action when the inventory button is clicked."""
+        
+        # Close the vault if it's open
+        if self.vault and self.vault.open:
+            self.vault.open = False
+            self.vault_button.pressed = False  # Also un-press the vault button
+
+        if self.inventory:
+            self.inventory.open = not self.inventory.open
+            if not self.inventory.open:
+                button.pressed = False
+        else:
+            self.inventory = Inventory(filename="assets/gui/inventory.png", 
+                                    center_x=self.window.width, 
+                                    center_y=self.window.height/2)
+            self.inventory.open = True
+            self.storage_list.append(self.inventory)
+
+    def handle_vault_event(self, button):
+        """Handle the action when the vault button is clicked."""
+        
+        # Close the inventory if it's open
+        if self.inventory and self.inventory.open:
+            self.inventory.open = False
+            self.inventory_button.pressed = False  # Also un-press the inventory button
+
+        if self.vault:
+            self.vault.open = not self.vault.open
+            if not self.vault.open:
+                button.pressed = False
+        else:
+            self.vault = Vault(filename="assets/gui/vault.png", 
+                            center_x=self.window.width, 
+                            center_y=self.window.height/2)
+            self.vault.open = True
+            self.storage_list.append(self.vault)
+            
     def button_press_check_event_launch(self):
         if button := arcade.check_for_collision_with_list(self.pointer, self.button_list):
-            if button[0].pressed:
-                button[0].pressed = False
-            else:
-                for other_button in self.button_list:
-                    other_button.pressed = False
-                button[0].pressed = True
+            clicked_button = button[0]
+            self.toggle_button_press(clicked_button)
 
-            if button[0].reference == 'inventory':
-                if self.inventory:
-                    self.inventory.open = not self.inventory.open
-                    # If we close the inventory, reset the button's pressed state
-                    if not self.inventory.open:
-                        button[0].pressed = False
-                # If inventory doesn't exist, create it
-                else:
-                    self.inventory = Inventory(filename="assets/gui/inventory.png", 
-                                            center_x=self.window.width - 175, 
-                                            center_y=self.window.height/2 + 10)
-                    self.inventory.open = True
+            if clicked_button.reference == 'inventory':
+                self.handle_inventory_event(clicked_button)
+            elif clicked_button.reference == 'vault':
+                self.handle_vault_event(clicked_button)
 
     def on_mouse_press(self, x, y, button, modifiers):
         self.button_press_check_event_launch()
@@ -158,6 +198,12 @@ class HomeView(arcade.View):
         self.player.update()
         self.home_button_bar.update(self.window.width, self.window.height)
         self.button_list.update()
+
+        if self.inventory:
+            self.inventory.update(self.window.width, self.window.height)
+
+        if self.vault:
+            self.vault.update(self.window.width, self.window.height)
             
     def on_resize(self, width, height):
         self.camera_sprites.resize(int(width), int(height))
