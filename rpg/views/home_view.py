@@ -121,7 +121,7 @@ class HomeView(arcade.View):
         self.button_list.draw()
         if self.inventory:
             self.inventory.draw()
-            # self.inventory.debug_draw_inventory_slots()
+            self.inventory.debug_draw_inventory_slots()
             
         if self.vault:
             self.vault.draw()
