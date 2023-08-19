@@ -121,8 +121,7 @@ class HomeView(arcade.View):
         self.button_list.draw()
         if self.inventory:
             self.inventory.draw()
-            self.inventory.debug_draw_inventory_slots()
-            
+
         if self.vault:
             self.vault.draw()
 
@@ -147,7 +146,7 @@ class HomeView(arcade.View):
             self.inventory = None
         else:
             self.close_all_storage()  
-            self.inventory = Inventory(filename="assets/gui/storage/inventory.png", center_x=self.window.width, center_y=self.window.height)
+            self.inventory = Inventory(filename="assets/gui/storage/inventory.png")
 
     def handle_vault_event(self):
         if self.vault:
