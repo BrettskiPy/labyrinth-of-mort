@@ -121,7 +121,7 @@ class HomeView(arcade.View):
         self.button_list.draw()
         if self.inventory:
             self.inventory.draw()
-            self.inventory.debug_draw_inventory_slots()
+            # self.inventory.debug_draw_inventory_slots()
             
         if self.vault:
             self.vault.draw()
@@ -147,7 +147,7 @@ class HomeView(arcade.View):
             self.inventory = None
         else:
             self.close_all_storage()  
-            self.inventory = Inventory(filename="assets/gui/inventory.png", center_x=self.window.width, center_y=self.window.height)
+            self.inventory = Inventory(filename="assets/gui/storage/inventory.png", center_x=self.window.width, center_y=self.window.height)
 
     def handle_vault_event(self):
         if self.vault:
@@ -156,15 +156,6 @@ class HomeView(arcade.View):
             self.close_all_storage()
             self.vault = Vault(filename="assets/gui/vault.png", 
                                center_x=self.window.width, center_y=self.window.height)
-    
-    def handle_dungeon_event(self):
-        if self.default_background:
-            self.close_all_storage()
-            self.background = arcade.load_texture("assets/background/dungeon_grouping.png")
-            self.default_background = False
-        else:
-            self.background = arcade.load_texture("assets/background/forest.png")
-            self.default_background = True
             
     def button_press_check_event_launch(self):
 
@@ -176,12 +167,6 @@ class HomeView(arcade.View):
                 self.handle_inventory_event()
             elif clicked_button.reference == 'vault':
                 self.handle_vault_event()
-
-            if self.default_background is False and clicked_button.reference != 'dungeon':
-                self.handle_dungeon_event()
-            elif clicked_button.reference == 'dungeon':
-                self.handle_dungeon_event()
-                
 
     def on_mouse_press(self, x, y, button, modifiers):
         self.button_press_check_event_launch()
