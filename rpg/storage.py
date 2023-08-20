@@ -26,12 +26,14 @@ class Item(arcade.Sprite):
         super().__init__(filename, scale)
         self.center_x, self.center_y = mapped_slot_position
         self.slot_index = slot_index
+        self.original_slot_index = slot_index
 
 class Inventory(arcade.Sprite):
     def __init__(self, filename, window_width, window_height, scale=1):
         super().__init__(filename, scale)
         self.open = False   
         self.item_glabbed = False
+        self.grabbed_item = None
 
         self.center_x = window_width - 211
         self.center_y = window_height / 2 - 10
@@ -44,7 +46,6 @@ class Inventory(arcade.Sprite):
         }
         self.map_slots()
         self.item_list = arcade.SpriteList()
-        self.iconized_item = None
 
     def add_new_item(self):
         available_slot = self.find_next_available_slot()
@@ -113,8 +114,9 @@ class Inventory(arcade.Sprite):
         super().draw()
         self.draw_inventory_slots()
         self.item_list.draw()
-        if self.iconized_item:
-            self.iconized_item.draw()
+
+        if self.grabbed_item:
+            self.grabbed_item.draw()
 
     def update_slot_positions(self, sprite_list, delta_x, delta_y):
         for sprite in sprite_list:
@@ -125,6 +127,45 @@ class Inventory(arcade.Sprite):
         for item in self.item_list:
             item.center_x += delta_x
             item.center_y += delta_y
+    def handle_item_drag_and_drop(self, pointer):
+        if not self.grabbed_item and pointer.left_click:
+            collided_items = pointer.collides_with_list(self.item_list)
+            if collided_items:
+                self.grabbed_item = collided_items[0]
+                self.grabbed_item.original_slot_index = self.grabbed_item.slot_index  # Store the original slot index
+                self.item_list.remove(self.grabbed_item)
+
+        if self.grabbed_item:
+            self.grabbed_item.center_x = pointer.center_x
+            self.grabbed_item.center_y = pointer.center_y
+            if not pointer.left_click:
+                placed_in_new_slot = False
+                for slot_sprite in self.inventory_slot_sprites:
+                    if self.grabbed_item.collides_with_sprite(slot_sprite):
+                        existing_item = None
+                        for item in self.item_list:
+                            if item.slot_index == slot_sprite.slot_number:
+                                existing_item = item
+                                break
+
+                        if existing_item:
+                            existing_item.slot_index = self.grabbed_item.slot_index
+                            existing_item.center_x, existing_item.center_y = self.mapped_slots['inventory'][existing_item.slot_index]
+
+                        self.grabbed_item.slot_index = slot_sprite.slot_number
+                        self.grabbed_item.center_x, self.grabbed_item.center_y = self.mapped_slots['inventory'][slot_sprite.slot_number]
+                        
+                        self.item_list.append(self.grabbed_item)
+                        self.grabbed_item = None
+                        placed_in_new_slot = True
+                        break
+                
+                # If the item wasn't placed in a new slot, return it to its original slot
+                if not placed_in_new_slot:
+                    self.grabbed_item.slot_index = self.grabbed_item.original_slot_index
+                    self.grabbed_item.center_x, self.grabbed_item.center_y = self.mapped_slots['inventory'][self.grabbed_item.original_slot_index]
+                    self.item_list.append(self.grabbed_item)
+                    self.grabbed_item = None
 
     def update(self, window_width, window_height, pointer):
         delta_x = window_width - 211 - self.center_x
@@ -134,13 +175,7 @@ class Inventory(arcade.Sprite):
         self.update_slot_positions(self.inventory_slot_sprites, delta_x, delta_y)
         self.update_slot_positions(self.equipment_slot_sprites, delta_x, delta_y)
         self.update_item_positions(delta_x, delta_y)
-
-        grabbed_item = pointer.collides_with_list(self.item_list)
-        if grabbed_item and pointer.left_click:
-            item = grabbed_item[0]
-            print(item.position)
-            print(item.slot_index)
-
+        self.handle_item_drag_and_drop(pointer)
         self.item_list.update()
             
 
