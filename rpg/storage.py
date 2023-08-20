@@ -180,6 +180,11 @@ class Inventory(arcade.Sprite):
 
     def get_mapped_slot(self, slot_index):
         return self.mapped_slots['inventory'][slot_index] if slot_index < len(self.mapped_slots['inventory']) else self.mapped_slots['equipment'][slot_index - len(self.mapped_slots['inventory'])]
+    
+    def recalculate_slot_mappings(self):
+        self.mapped_slots['inventory'] = []
+        self.mapped_slots['equipment'] = []
+        self.map_slots()
 
     def reset_grabbed_item(self):
         self.grabbed_item.slot_index = self.grabbed_item.original_slot_index
@@ -190,15 +195,18 @@ class Inventory(arcade.Sprite):
     def update(self, window_width, window_height, pointer):
         delta_x = window_width - 211 - self.center_x
         delta_y = (window_height / 2 - INV_OFFSET) - self.center_y
-        self.center_x = window_width - 211
-        self.center_y = window_height / 2 - INV_OFFSET
-        self.update_slot_positions(self.inventory_slot_sprites, delta_x, delta_y)
-        self.update_slot_positions(self.equipment_slot_sprites, delta_x, delta_y)
-        self.update_item_positions(delta_x, delta_y)
+
+        # Check if the window has been resized
+        if delta_x != 0 or delta_y != 0:
+            self.center_x = window_width - 211
+            self.center_y = window_height / 2 - INV_OFFSET
+            self.update_slot_positions(self.inventory_slot_sprites, delta_x, delta_y)
+            self.update_slot_positions(self.equipment_slot_sprites, delta_x, delta_y)
+            self.update_item_positions(delta_x, delta_y)
+            self.recalculate_slot_mappings()  # Recalculate the slot mappings
+
         self.handle_item_drag_and_drop(pointer)
         self.item_list.update()
-
-            
 
 class Vault(arcade.Sprite):
     def __init__(self, filename, center_x, center_y, scale=1):
