@@ -165,6 +165,14 @@ class HomeView(arcade.View):
                 center_y=self.window.height,
             )
 
+    def update_pointer_image_from_event(self):
+        if self.inventory and self.inventory.grabbed_item:
+            self.pointer.update_pointer_image("grab")
+        elif self.inventory and self.pointer.collides_with_list(self.inventory.item_list):
+            self.pointer.update_pointer_image("hover")
+        else:
+            self.pointer.update_pointer_image("default")
+
     def button_press_check_event_launch(self):
         if button := arcade.check_for_collision_with_list(
             self.pointer, self.button_list
@@ -198,6 +206,7 @@ class HomeView(arcade.View):
         self.player.update()
         self.home_button_bar.update(self.window.width, self.window.height)
         self.button_list.update()
+        self.update_pointer_image_from_event()
 
         if self.inventory:
             self.inventory.update(self.window.width, self.window.height, self.pointer)
