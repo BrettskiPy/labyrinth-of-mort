@@ -19,7 +19,9 @@ class HomeButtonBar(arcade.Sprite):
 
 
 class HomeButton(arcade.Sprite):
-    def __init__(self, filename, pressed_image, button_bar, y_offset, reference, scale=1):
+    def __init__(
+        self, filename, pressed_image, button_bar, y_offset, reference, scale=1
+    ):
         super().__init__(filename, scale)
         self.up_image = filename
         self.pressed_image = pressed_image
@@ -60,35 +62,35 @@ class HomeView(arcade.View):
             pressed_image="assets/gui/button/inventory_pressed.png",
             button_bar=self.home_button_bar,
             y_offset=100,
-            reference='inventory'
+            reference="inventory",
         )
         self.vault_button = HomeButton(
             filename="assets/gui/button/vault_up.png",
             pressed_image="assets/gui/button/vault_pressed.png",
             button_bar=self.home_button_bar,
             y_offset=50,
-            reference='vault'
+            reference="vault",
         )
         self.shop_button = HomeButton(
             filename="assets/gui/button/shop_up.png",
             pressed_image="assets/gui/button/shop_pressed.png",
             button_bar=self.home_button_bar,
             y_offset=0,
-            reference='shop'
+            reference="shop",
         )
         self.dungeon_button = HomeButton(
             filename="assets/gui/button/dungeon_up.png",
             pressed_image="assets/gui/button/dungeon_pressed.png",
             button_bar=self.home_button_bar,
             y_offset=-50,
-            reference='dungeon'
+            reference="dungeon",
         )
         self.info_button = HomeButton(
             filename="assets/gui/button/info_up.png",
             pressed_image="assets/gui/button/info_pressed.png",
             button_bar=self.home_button_bar,
             y_offset=-100,
-            reference='info'
+            reference="info",
         )
         self.button_list.append(self.inventory_button)
         self.button_list.append(self.vault_button)
@@ -126,7 +128,6 @@ class HomeView(arcade.View):
         if self.vault:
             self.vault.draw()
 
-
         self.pointer.draw()
         # self.pointer.draw_hit_box(arcade.color.RED, line_thickness=1)
 
@@ -146,33 +147,41 @@ class HomeView(arcade.View):
         if self.inventory:
             self.inventory = None
         else:
-            self.close_all_storage()  
-            self.inventory = Inventory(filename="assets/gui/storage/inventory.png", window_width=self.window.width, window_height=self.window.height)
+            self.close_all_storage()
+            self.inventory = Inventory(
+                filename="assets/gui/storage/inventory.png",
+                window_width=self.window.width,
+                window_height=self.window.height,
+            )
 
     def handle_vault_event(self):
         if self.vault:
             self.vault = None
         else:
             self.close_all_storage()
-            self.vault = Vault(filename="assets/gui/storage/vault.png", 
-                               center_x=self.window.width, center_y=self.window.height)
-            
-    def button_press_check_event_launch(self):
+            self.vault = Vault(
+                filename="assets/gui/storage/vault.png",
+                center_x=self.window.width,
+                center_y=self.window.height,
+            )
 
-        if button := arcade.check_for_collision_with_list(self.pointer, self.button_list):
+    def button_press_check_event_launch(self):
+        if button := arcade.check_for_collision_with_list(
+            self.pointer, self.button_list
+        ):
             clicked_button = button[0]
             self.toggle_button_press(clicked_button)
-            
-            if clicked_button.reference == 'inventory':
+
+            if clicked_button.reference == "inventory":
                 self.handle_inventory_event()
-            elif clicked_button.reference == 'vault':
+            elif clicked_button.reference == "vault":
                 self.handle_vault_event()
 
     def on_mouse_press(self, x, y, button, modifiers):
         if button == arcade.MOUSE_BUTTON_LEFT:
             self.button_press_check_event_launch()
             self.pointer.left_click = True
-        
+
     def on_mouse_release(self, x, y, button, modifiers):
         if button == arcade.MOUSE_BUTTON_LEFT:
             self.pointer.left_click = False
@@ -195,7 +204,7 @@ class HomeView(arcade.View):
 
         if self.vault:
             self.vault.update(self.window.width, self.window.height)
-            
+
     def on_resize(self, width, height):
         self.camera_sprites.resize(int(width), int(height))
         self.camera_gui.resize(int(width), int(height))

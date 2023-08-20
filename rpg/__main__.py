@@ -13,6 +13,7 @@ class Window(arcade.Window):
         super().__init__(width, height, title, resizable=True)
         self.views = {}
 
+
 def main():
     window = Window(DEFAULT_SCREEN_WIDTH, DEFAULT_SCREEN_HEIGHT, SCREEN_TITLE)
     home_view = HomeView()

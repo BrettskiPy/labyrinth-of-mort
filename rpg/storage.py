@@ -1,7 +1,6 @@
 import arcade
 import random
 
-
 BASE_X_OFFSET = 22
 BASE_Y_OFFSET = -68
 SLOT_SIZE = 32
@@ -31,13 +30,11 @@ class Item(arcade.Sprite):
 class Inventory(arcade.Sprite):
     def __init__(self, filename, window_width, window_height, scale=1):
         super().__init__(filename, scale)
-        self.open = False   
+        self.open = False
         self.item_glabbed = False
         self.grabbed_item = None
-
         self.center_x = window_width - 211
         self.center_y = window_height / 2 - 10
-
         self.inventory_slot_sprites = arcade.SpriteList()
         self.equipment_slot_sprites = arcade.SpriteList()
         self.mapped_slots = {
@@ -49,9 +46,9 @@ class Inventory(arcade.Sprite):
 
     def add_new_item(self):
         available_slot = self.find_next_available_slot()
-        if available_slot is not None:
+        if available_slot is not None and available_slot < len(self.mapped_slots['inventory']):
             new_item = Item(
-                filename=random.choice(["assets/test_item1.png", "assets/test_item2.png" , "assets/test_item3.png"]),
+                filename=random.choice(["assets/test_item1.png", "assets/test_item2.png", "assets/test_item3.png"]),
                 slot_index=available_slot,
                 mapped_slot_position=self.mapped_slots['inventory'][available_slot]
             )
@@ -61,11 +58,11 @@ class Inventory(arcade.Sprite):
 
     def find_next_available_slot(self):
         occupied_slots = [item.slot_index for item in self.item_list]
-        for slot in range(len(self.mapped_slots['inventory'])):
+        for slot in range(len(self.mapped_slots['inventory']) + len(self.mapped_slots['equipment'])):
             if slot not in occupied_slots:
                 return slot
         return None  # Return None if all slots are occupied
-    
+
     def map_slots(self):
         self.map_inventory_slots()
         self.map_equipment_slots()
@@ -104,19 +101,18 @@ class Inventory(arcade.Sprite):
 
     def draw_inventory_slots(self):
         for slot_sprite in self.inventory_slot_sprites:
-            # arcade.draw_text(str(slot_sprite.slot_number), slot_sprite.center_x, slot_sprite.center_y, arcade.color.WHITE, font_size=10, anchor_x="center", anchor_y="center")
             slot_sprite.draw_hit_box(color=arcade.color.RED)
         for equipment_sprite in self.equipment_slot_sprites:
-            # arcade.draw_text(str(equipment_sprite.equipment_slot_number), equipment_sprite.center_x, equipment_sprite.center_y, arcade.color.WHITE, font_size=10, anchor_x="center", anchor_y="center")
-            equipment_sprite.draw_hit_box(color=arcade.color.BLUE) 
+            equipment_sprite.draw_hit_box(color=arcade.color.BLUE)
 
     def draw(self):
         super().draw()
         self.draw_inventory_slots()
         self.item_list.draw()
-
         if self.grabbed_item:
             self.grabbed_item.draw()
+        
+        arcade.draw_text("Big Blood Sword", start_x=self.center_x - 140, start_y=self.center_y - self.height + 200, font_size=12)
 
     def update_slot_positions(self, sprite_list, delta_x, delta_y):
         for sprite in sprite_list:
@@ -127,12 +123,13 @@ class Inventory(arcade.Sprite):
         for item in self.item_list:
             item.center_x += delta_x
             item.center_y += delta_y
+
     def handle_item_drag_and_drop(self, pointer):
         if not self.grabbed_item and pointer.left_click:
             collided_items = pointer.collides_with_list(self.item_list)
             if collided_items:
                 self.grabbed_item = collided_items[0]
-                self.grabbed_item.original_slot_index = self.grabbed_item.slot_index  # Store the original slot index
+                self.grabbed_item.original_slot_index = self.grabbed_item.slot_index
                 self.item_list.remove(self.grabbed_item)
 
         if self.grabbed_item:
@@ -149,23 +146,44 @@ class Inventory(arcade.Sprite):
                                 break
 
                         if existing_item:
-                            existing_item.slot_index = self.grabbed_item.slot_index
-                            existing_item.center_x, existing_item.center_y = self.mapped_slots['inventory'][existing_item.slot_index]
+                            existing_item.slot_index = self.grabbed_item.original_slot_index
+                            existing_item.center_x, existing_item.center_y = self.mapped_slots['inventory'][existing_item.slot_index] if existing_item.slot_index < len(self.mapped_slots['inventory']) else self.mapped_slots['equipment'][existing_item.slot_index - len(self.mapped_slots['inventory'])]
 
                         self.grabbed_item.slot_index = slot_sprite.slot_number
                         self.grabbed_item.center_x, self.grabbed_item.center_y = self.mapped_slots['inventory'][slot_sprite.slot_number]
-                        
+
                         self.item_list.append(self.grabbed_item)
                         self.grabbed_item = None
                         placed_in_new_slot = True
                         break
-                
-                # If the item wasn't placed in a new slot, return it to its original slot
+
+                if not placed_in_new_slot:
+                    for slot_sprite in self.equipment_slot_sprites:
+                        if self.grabbed_item.collides_with_sprite(slot_sprite):
+                            existing_item = None
+                            for item in self.item_list:
+                                if item.slot_index == slot_sprite.equipment_slot_number + len(self.mapped_slots['inventory']):
+                                    existing_item = item
+                                    break
+
+                            if existing_item:
+                                existing_item.slot_index = self.grabbed_item.original_slot_index
+                                existing_item.center_x, existing_item.center_y = self.mapped_slots['inventory'][existing_item.slot_index] if existing_item.slot_index < len(self.mapped_slots['inventory']) else self.mapped_slots['equipment'][existing_item.slot_index - len(self.mapped_slots['inventory'])]
+
+                            self.grabbed_item.slot_index = slot_sprite.equipment_slot_number + len(self.mapped_slots['inventory'])
+                            self.grabbed_item.center_x, self.grabbed_item.center_y = self.mapped_slots['equipment'][slot_sprite.equipment_slot_number]
+
+                            self.item_list.append(self.grabbed_item)
+                            self.grabbed_item = None
+                            placed_in_new_slot = True
+                            break
+
                 if not placed_in_new_slot:
                     self.grabbed_item.slot_index = self.grabbed_item.original_slot_index
-                    self.grabbed_item.center_x, self.grabbed_item.center_y = self.mapped_slots['inventory'][self.grabbed_item.original_slot_index]
+                    self.grabbed_item.center_x, self.grabbed_item.center_y = self.mapped_slots['inventory'][self.grabbed_item.original_slot_index] if self.grabbed_item.original_slot_index < len(self.mapped_slots['inventory']) else self.mapped_slots['equipment'][self.grabbed_item.original_slot_index - len(self.mapped_slots['inventory'])]
                     self.item_list.append(self.grabbed_item)
                     self.grabbed_item = None
+
 
     def update(self, window_width, window_height, pointer):
         delta_x = window_width - 211 - self.center_x
@@ -177,6 +195,7 @@ class Inventory(arcade.Sprite):
         self.update_item_positions(delta_x, delta_y)
         self.handle_item_drag_and_drop(pointer)
         self.item_list.update()
+
             
 
 class Vault(arcade.Sprite):
