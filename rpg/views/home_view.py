@@ -115,7 +115,7 @@ class HomeView(arcade.View):
             0, 0, self.window.width, self.window.height, self.background
         )
         self.player.draw(pixelated=True)
-        
+
         # GUI Stuff
         self.camera_gui.use()
         self.home_button_bar.draw()

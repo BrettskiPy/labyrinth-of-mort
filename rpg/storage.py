@@ -19,6 +19,11 @@ EQUIPMENT_SLOTS_CONFIG = [
     ("boots", -77, -32)
 ]
 
+class TestItem(arcade.Sprite):
+    def __init__(self, filename, scale=1, mapped_slot=None):
+        super().__init__(filename, scale)
+        self.center_x, self.center_y = mapped_slot
+
 class Inventory(arcade.Sprite):
     def __init__(self, filename, window_width, window_height, scale=1):
         super().__init__(filename, scale)
@@ -36,9 +41,9 @@ class Inventory(arcade.Sprite):
         self.map_slots()
         self.test_item_list = arcade.SpriteList()
         # Place test item on inventory slot number 1
-        self.test_item = arcade.Sprite(filename="assets/test_item.png", scale=1)
-        self.test_item.center_x, self.test_item.center_y = self.mapped_slots['inventory'][0]
-        
+        self.test_item = TestItem(filename="assets/test_item.png", scale=1, mapped_slot=self.mapped_slots['inventory'][0])
+        self.test_item_list.append(self.test_item)
+
     def map_slots(self):
         self.map_inventory_slots()
         self.map_equipment_slots()
@@ -77,16 +82,16 @@ class Inventory(arcade.Sprite):
 
     def draw_inventory_slots(self):
         for slot_sprite in self.inventory_slot_sprites:
-            arcade.draw_text(str(slot_sprite.slot_number), slot_sprite.center_x, slot_sprite.center_y, arcade.color.WHITE, font_size=10, anchor_x="center", anchor_y="center")
+            # arcade.draw_text(str(slot_sprite.slot_number), slot_sprite.center_x, slot_sprite.center_y, arcade.color.WHITE, font_size=10, anchor_x="center", anchor_y="center")
             slot_sprite.draw_hit_box(color=arcade.color.RED)
         for equipment_sprite in self.equipment_slot_sprites:
-            arcade.draw_text(str(equipment_sprite.equipment_slot_number), equipment_sprite.center_x, equipment_sprite.center_y, arcade.color.WHITE, font_size=10, anchor_x="center", anchor_y="center")
+            # arcade.draw_text(str(equipment_sprite.equipment_slot_number), equipment_sprite.center_x, equipment_sprite.center_y, arcade.color.WHITE, font_size=10, anchor_x="center", anchor_y="center")
             equipment_sprite.draw_hit_box(color=arcade.color.BLUE) 
 
     def draw(self):
         super().draw()
         self.draw_inventory_slots()
-        self.test_item.draw()
+        self.test_item_list.draw()
 
     def update_slot_positions(self, sprite_list, delta_x, delta_y):
         for sprite in sprite_list:
@@ -94,8 +99,9 @@ class Inventory(arcade.Sprite):
             sprite.center_y += delta_y
 
     def update_item_positions(self, delta_x, delta_y):
-        self.test_item.center_x += delta_x
-        self.test_item.center_y += delta_y
+        for item in self.test_item_list:
+            item.center_x += delta_x
+            item.center_y += delta_y
 
     def update(self, window_width, window_height):
         delta_x = window_width - 211 - self.center_x
@@ -106,7 +112,7 @@ class Inventory(arcade.Sprite):
         self.update_slot_positions(self.equipment_slot_sprites, delta_x, delta_y)
         self.update_item_positions(delta_x, delta_y)
 
-        self.test_item.update()
+        self.test_item_list.update()
             
 
 class Vault(arcade.Sprite):
