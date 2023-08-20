@@ -2,7 +2,6 @@ import arcade
 import pointer
 from player import Player
 from storage import Inventory, Vault
-from storage import TestItem
 
 
 DEFAULT_SCREEN_WIDTH = 800
@@ -148,7 +147,7 @@ class HomeView(arcade.View):
             self.inventory = None
         else:
             self.close_all_storage()  
-            self.inventory = Inventory(filename="assets/gui/storage/inventory.png")
+            self.inventory = Inventory(filename="assets/gui/storage/inventory.png", window_width=self.window.width, window_height=self.window.height)
 
     def handle_vault_event(self):
         if self.vault:
