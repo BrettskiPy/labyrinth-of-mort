@@ -29,6 +29,7 @@ class Item(arcade.Sprite):
         self.center_x, self.center_y = mapped_slot_position
         self.slot_index = slot_index
         self.original_slot_index = slot_index
+        self.foo_stat = random.randint(1, 100)
 
 class Inventory(arcade.Sprite):
     def __init__(self, filename, window_width, window_height, scale=1):
@@ -108,16 +109,28 @@ class Inventory(arcade.Sprite):
         for equipment_sprite in self.equipment_slot_sprites:
             equipment_sprite.draw_hit_box(color=arcade.color.BLUE)
 
-    def draw(self):
+    def draw_item_stats_if_hovered(self, control_key_pressed, pointer):
+        if control_key_pressed:
+            hovered_item = pointer.collides_with_list(self.item_list)
+            if hovered_item:
+                item = hovered_item[0]
+                x, y = item.center_x, item.center_y
+                stats_text = f"Foo Stat: {item.foo_stat}"
+                arcade.draw_rectangle_filled(x, y + 20, 100, 30, arcade.color.BLACK)
+                arcade.draw_text(stats_text, x - 45, y + 15, arcade.color.WHITE, font_size=12)
+
+    def draw(self, control_key_pressed, pointer):
         super().draw()
-        # self.draw_inventory_slots()
         self.item_list.draw()
         if self.grabbed_item:
             self.grabbed_item.draw()
-        
-        arcade.draw_text("ATK: 123", start_x=self.center_x - 140, start_y=self.center_y - self.height + 350, font_size=12)
-        arcade.draw_text("HP: 321", start_x=self.center_x - 140, start_y=self.center_y - self.height + 330, font_size=12)
-        arcade.draw_text("Armor: 1337", start_x=self.center_x - 140, start_y=self.center_y - self.height + 310, font_size=12)
+
+        self.draw_item_stats_if_hovered(control_key_pressed, pointer)
+
+
+        # arcade.draw_text("ATK: 123", start_x=self.center_x - 140, start_y=self.center_y - self.height + 350, font_size=12)
+        # arcade.draw_text("HP: 321", start_x=self.center_x - 140, start_y=self.center_y - self.height + 330, font_size=12)
+        # arcade.draw_text("Armor: 1337", start_x=self.center_x - 140, start_y=self.center_y - self.height + 310, font_size=12)
 
 
     def update_slot_positions(self, sprite_list, delta_x, delta_y):
@@ -129,7 +142,7 @@ class Inventory(arcade.Sprite):
         for item in self.item_list:
             item.center_x += delta_x
             item.center_y += delta_y
-            
+
     def handle_item_drag_and_drop(self, pointer):
         if not self.grabbed_item and pointer.left_click:
             collided_items = pointer.collides_with_list(self.item_list)

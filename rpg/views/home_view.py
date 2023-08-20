@@ -2,6 +2,7 @@ import arcade
 from pointer import Pointer
 from player import Player
 from storage import Inventory, Vault
+import random
 
 
 DEFAULT_SCREEN_WIDTH = 800
@@ -98,6 +99,7 @@ class HomeView(arcade.View):
         self.button_list.append(self.dungeon_button)
         self.button_list.append(self.info_button)
 
+        self.control_key_pressed = False
         self.window.set_mouse_visible(False)
         self.pointer = Pointer(filename="assets/pointers/gold_arrow.png")
         self.player = Player(filename="assets/player/base/human.png")
@@ -123,7 +125,7 @@ class HomeView(arcade.View):
         self.home_button_bar.draw()
         self.button_list.draw()
         if self.inventory:
-            self.inventory.draw()
+            self.inventory.draw(self.control_key_pressed, self.pointer)
 
         if self.vault:
             self.vault.draw()
@@ -197,9 +199,12 @@ class HomeView(arcade.View):
     def on_key_press(self, key, modifiers):
         if key == arcade.key.A:
             self.inventory.add_new_item()
+        if key == arcade.key.LCTRL:
+            self.control_key_pressed = True
 
     def on_key_release(self, key, modifiers):
-        pass
+        if key == arcade.key.LCTRL:
+            self.control_key_pressed = False
 
     def on_update(self, delta_time):
         self.pointer.update(self.window._mouse_x, self.window._mouse_y)
