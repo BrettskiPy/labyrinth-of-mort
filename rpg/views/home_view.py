@@ -173,21 +173,21 @@ class HomeView(arcade.View):
         else:
             self.pointer.update_pointer_image("default")
 
-    def button_press_check_event_launch(self):
-        if button := arcade.check_for_collision_with_list(
-            self.pointer, self.button_list
-        ):
+    def handle_button_press_events(self):
+        if button := arcade.check_for_collision_with_list(self.pointer, self.button_list):
             clicked_button = button[0]
             self.toggle_button_press(clicked_button)
-
-            if clicked_button.reference == "inventory":
-                self.handle_inventory_event()
-            elif clicked_button.reference == "vault":
-                self.handle_vault_event()
+            event_handlers = {
+                "inventory": self.handle_inventory_event,
+                "vault": self.handle_vault_event,
+            }
+            event_handler = event_handlers.get(clicked_button.reference)
+            if event_handler:
+                event_handler()
 
     def on_mouse_press(self, x, y, button, modifiers):
         if button == arcade.MOUSE_BUTTON_LEFT:
-            self.button_press_check_event_launch()
+            self.handle_button_press_events()
             self.pointer.left_click = True
 
     def on_mouse_release(self, x, y, button, modifiers):
