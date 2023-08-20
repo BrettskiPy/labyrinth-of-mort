@@ -1,23 +1,26 @@
 import arcade
 import random
 
+
+INV_OFFSET = 60
+
 BASE_X_OFFSET = 22
-BASE_Y_OFFSET = -68
+BASE_Y_OFFSET = - 14
 SLOT_SIZE = 32
 SLOT_ROW_OFFSET_X = SLOT_SIZE + 5
 SLOT_ROW_OFFSET_Y = SLOT_SIZE + 4
 SLOTS_PER_ROW = 4
 
 EQUIPMENT_SLOTS_CONFIG = [
-    ("necklace", -32, 103),
-    ("helmet", -77, 103),
-    ("offhand", -32, 58),
-    ("chest", -77, 58),
-    ("sword", -121, 58),
-    ("right ring", -32, 13),
-    ("legs", -77, 13),
-    ("left ring", -121, 13),
-    ("boots", -77, -32)
+    ("necklace", -33, 156),
+    ("helmet", -77, 156),
+    ("offhand", -33, 110),
+    ("chest", -77, 110),
+    ("sword", -121, 110),
+    ("right ring", -33, 65),
+    ("legs", -77,  65),
+    ("left ring", -121,  65),
+    ("boots", -77,  20)
 ]
 
 class Item(arcade.Sprite):
@@ -34,7 +37,7 @@ class Inventory(arcade.Sprite):
         self.item_glabbed = False
         self.grabbed_item = None
         self.center_x = window_width - 211
-        self.center_y = window_height / 2 - 10
+        self.center_y = window_height / 2 - INV_OFFSET 
         self.inventory_slot_sprites = arcade.SpriteList()
         self.equipment_slot_sprites = arcade.SpriteList()
         self.mapped_slots = {
@@ -107,12 +110,15 @@ class Inventory(arcade.Sprite):
 
     def draw(self):
         super().draw()
-        self.draw_inventory_slots()
+        # self.draw_inventory_slots()
         self.item_list.draw()
         if self.grabbed_item:
             self.grabbed_item.draw()
         
-        arcade.draw_text("Big Blood Sword", start_x=self.center_x - 140, start_y=self.center_y - self.height + 200, font_size=12)
+        arcade.draw_text("ATK: 123", start_x=self.center_x - 140, start_y=self.center_y - self.height + 350, font_size=12)
+        arcade.draw_text("HP: 321", start_x=self.center_x - 140, start_y=self.center_y - self.height + 330, font_size=12)
+        arcade.draw_text("Armor: 1337", start_x=self.center_x - 140, start_y=self.center_y - self.height + 310, font_size=12)
+
 
     def update_slot_positions(self, sprite_list, delta_x, delta_y):
         for sprite in sprite_list:
@@ -187,9 +193,9 @@ class Inventory(arcade.Sprite):
 
     def update(self, window_width, window_height, pointer):
         delta_x = window_width - 211 - self.center_x
-        delta_y = (window_height / 2 - 10) - self.center_y
+        delta_y = (window_height / 2 - INV_OFFSET) - self.center_y
         self.center_x = window_width - 211
-        self.center_y = window_height / 2 - 10
+        self.center_y = window_height / 2 - INV_OFFSET
         self.update_slot_positions(self.inventory_slot_sprites, delta_x, delta_y)
         self.update_slot_positions(self.equipment_slot_sprites, delta_x, delta_y)
         self.update_item_positions(delta_x, delta_y)
