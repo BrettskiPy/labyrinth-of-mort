@@ -20,9 +20,10 @@ EQUIPMENT_SLOTS_CONFIG = [
 ]
 
 class TestItem(arcade.Sprite):
-    def __init__(self, filename, scale=1, mapped_slot=None):
+    def __init__(self, filename, scale=1, mapped_slot=None, slot_position=None):
         super().__init__(filename, scale)
         self.center_x, self.center_y = mapped_slot
+        self.slot_position = slot_position
 
 class Inventory(arcade.Sprite):
     def __init__(self, filename, window_width, window_height, scale=1):
@@ -40,10 +41,43 @@ class Inventory(arcade.Sprite):
         }
         self.map_slots()
         self.test_item_list = arcade.SpriteList()
-        # Place test item on inventory slot number 1
-        self.test_item = TestItem(filename="assets/test_item.png", scale=1, mapped_slot=self.mapped_slots['inventory'][0])
-        self.test_item_list.append(self.test_item)
 
+        new_item = TestItem(
+            filename="assets/test_item.png",
+            slot_position=20,
+            mapped_slot=self.mapped_slots['inventory'][20]
+        )
+        self.test_item_list.append(new_item)
+        new_item = TestItem(
+                filename="assets/test_item.png",
+                slot_position=5,
+                mapped_slot=self.mapped_slots['inventory'][5]
+            )
+
+        self.add_new_item()
+        self.add_new_item()
+        self.add_new_item()
+
+    def add_new_item(self, filename="assets/test_item.png"):
+        available_slot = self.find_next_available_slot()
+        print(available_slot)
+        if available_slot is not None:
+            new_item = TestItem(
+                filename=filename,
+                slot_position=available_slot,
+                mapped_slot=self.mapped_slots['inventory'][available_slot]
+            )
+            self.test_item_list.append(new_item)
+        else:
+            print("Inventory full!")
+
+    def find_next_available_slot(self):
+        occupied_slots = [item.slot_position for item in self.test_item_list]
+        for slot in range(len(self.mapped_slots['inventory'])):
+            if slot not in occupied_slots:
+                return slot
+        return None  # Return None if all slots are occupied
+    
     def map_slots(self):
         self.map_inventory_slots()
         self.map_equipment_slots()
