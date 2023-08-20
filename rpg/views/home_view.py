@@ -1,5 +1,5 @@
 import arcade
-import pointer
+from pointer import Pointer
 from player import Player
 from storage import Inventory, Vault
 
@@ -97,7 +97,7 @@ class HomeView(arcade.View):
         self.button_list.append(self.info_button)
 
         self.window.set_mouse_visible(False)
-        self.pointer = pointer.Pointer(filename="assets/pointers/gold_arrow.png")
+        self.pointer = Pointer(filename="assets/pointers/gold_arrow.png")
         self.player = Player(filename="assets/player/base/human.png")
         self.inventory = None
         self.vault = None
@@ -169,10 +169,17 @@ class HomeView(arcade.View):
                 self.handle_vault_event()
 
     def on_mouse_press(self, x, y, button, modifiers):
-        self.button_press_check_event_launch()
+        if button == arcade.MOUSE_BUTTON_LEFT:
+            self.button_press_check_event_launch()
+            self.pointer.left_click = True
+        
+    def on_mouse_release(self, x, y, button, modifiers):
+        if button == arcade.MOUSE_BUTTON_LEFT:
+            self.pointer.left_click = False
 
     def on_key_press(self, key, modifiers):
-        pass
+        if key == arcade.key.A:
+            self.inventory.add_new_item()
 
     def on_key_release(self, key, modifiers):
         pass
@@ -184,7 +191,7 @@ class HomeView(arcade.View):
         self.button_list.update()
 
         if self.inventory:
-            self.inventory.update(self.window.width, self.window.height)
+            self.inventory.update(self.window.width, self.window.height, self.pointer)
 
         if self.vault:
             self.vault.update(self.window.width, self.window.height)

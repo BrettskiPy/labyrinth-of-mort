@@ -1,4 +1,6 @@
 import arcade
+import random
+
 
 BASE_X_OFFSET = 22
 BASE_Y_OFFSET = -68
@@ -19,16 +21,17 @@ EQUIPMENT_SLOTS_CONFIG = [
     ("boots", -77, -32)
 ]
 
-class TestItem(arcade.Sprite):
-    def __init__(self, filename, scale=1, mapped_slot=None, slot_position=None):
+class Item(arcade.Sprite):
+    def __init__(self, filename, scale=1, mapped_slot_position=None, slot_index=None):
         super().__init__(filename, scale)
-        self.center_x, self.center_y = mapped_slot
-        self.slot_position = slot_position
+        self.center_x, self.center_y = mapped_slot_position
+        self.slot_index = slot_index
 
 class Inventory(arcade.Sprite):
     def __init__(self, filename, window_width, window_height, scale=1):
         super().__init__(filename, scale)
         self.open = False   
+        self.item_glabbed = False
 
         self.center_x = window_width - 211
         self.center_y = window_height / 2 - 10
@@ -40,39 +43,23 @@ class Inventory(arcade.Sprite):
             'equipment': []
         }
         self.map_slots()
-        self.test_item_list = arcade.SpriteList()
+        self.item_list = arcade.SpriteList()
+        self.iconized_item = None
 
-        new_item = TestItem(
-            filename="assets/test_item.png",
-            slot_position=20,
-            mapped_slot=self.mapped_slots['inventory'][20]
-        )
-        self.test_item_list.append(new_item)
-        new_item = TestItem(
-                filename="assets/test_item.png",
-                slot_position=5,
-                mapped_slot=self.mapped_slots['inventory'][5]
-            )
-
-        self.add_new_item()
-        self.add_new_item()
-        self.add_new_item()
-
-    def add_new_item(self, filename="assets/test_item.png"):
+    def add_new_item(self):
         available_slot = self.find_next_available_slot()
-        print(available_slot)
         if available_slot is not None:
-            new_item = TestItem(
-                filename=filename,
-                slot_position=available_slot,
-                mapped_slot=self.mapped_slots['inventory'][available_slot]
+            new_item = Item(
+                filename=random.choice(["assets/test_item1.png", "assets/test_item2.png" , "assets/test_item3.png"]),
+                slot_index=available_slot,
+                mapped_slot_position=self.mapped_slots['inventory'][available_slot]
             )
-            self.test_item_list.append(new_item)
+            self.item_list.append(new_item)
         else:
             print("Inventory full!")
 
     def find_next_available_slot(self):
-        occupied_slots = [item.slot_position for item in self.test_item_list]
+        occupied_slots = [item.slot_index for item in self.item_list]
         for slot in range(len(self.mapped_slots['inventory'])):
             if slot not in occupied_slots:
                 return slot
@@ -125,7 +112,9 @@ class Inventory(arcade.Sprite):
     def draw(self):
         super().draw()
         self.draw_inventory_slots()
-        self.test_item_list.draw()
+        self.item_list.draw()
+        if self.iconized_item:
+            self.iconized_item.draw()
 
     def update_slot_positions(self, sprite_list, delta_x, delta_y):
         for sprite in sprite_list:
@@ -133,11 +122,11 @@ class Inventory(arcade.Sprite):
             sprite.center_y += delta_y
 
     def update_item_positions(self, delta_x, delta_y):
-        for item in self.test_item_list:
+        for item in self.item_list:
             item.center_x += delta_x
             item.center_y += delta_y
 
-    def update(self, window_width, window_height):
+    def update(self, window_width, window_height, pointer):
         delta_x = window_width - 211 - self.center_x
         delta_y = (window_height / 2 - 10) - self.center_y
         self.center_x = window_width - 211
@@ -146,7 +135,13 @@ class Inventory(arcade.Sprite):
         self.update_slot_positions(self.equipment_slot_sprites, delta_x, delta_y)
         self.update_item_positions(delta_x, delta_y)
 
-        self.test_item_list.update()
+        grabbed_item = pointer.collides_with_list(self.item_list)
+        if grabbed_item and pointer.left_click:
+            item = grabbed_item[0]
+            print(item.position)
+            print(item.slot_index)
+
+        self.item_list.update()
             
 
 class Vault(arcade.Sprite):

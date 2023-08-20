@@ -11,6 +11,7 @@ class Pointer(arcade.Sprite):
             (-5, 0),  # Bottom-left
         ]
         self.set_hit_box(hitbox_points)
+        self.left_click = False
 
     def update(self, pos_x, pos_y):
         self.center_x = pos_x
