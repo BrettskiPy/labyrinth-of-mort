@@ -28,6 +28,7 @@ class Item(arcade.Sprite):
         super().__init__(filename, scale)
         self.center_x, self.center_y = mapped_slot_position
         self.slot_index = slot_index
+        self.equipment_slot_index = None
         self.original_slot_index = slot_index
         self.foo_stat = random.randint(1, 100)
 
@@ -85,14 +86,14 @@ class Inventory(arcade.Sprite):
                 slot_number += 1
 
     def map_equipment_slots(self):
-        equipment_slot_number = 0
+        equipment_slot_index = 0
         for equipment, x_offset, y_offset in EQUIPMENT_SLOTS_CONFIG:
             x = self.center_x + x_offset
             y = self.center_y + y_offset
             self.mapped_slots['equipment'].append((x, y))
             slot_sprite = self.add_slot_sprite(self.equipment_slot_sprites, x, y)
-            slot_sprite.equipment_slot_number = equipment_slot_number
-            equipment_slot_number += 1
+            slot_sprite.equipment_slot_index = equipment_slot_index
+            equipment_slot_index += 1
 
     def add_slot_sprite(self, sprite_list, x, y):
         slot_sprite = arcade.Sprite("assets/square.png", scale=1, hit_box_algorithm=None)
@@ -126,12 +127,7 @@ class Inventory(arcade.Sprite):
             self.grabbed_item.draw()
 
         self.draw_item_stats_if_hovered(control_key_pressed, pointer)
-
-
         # arcade.draw_text("ATK: 123", start_x=self.center_x - 140, start_y=self.center_y - self.height + 350, font_size=12)
-        # arcade.draw_text("HP: 321", start_x=self.center_x - 140, start_y=self.center_y - self.height + 330, font_size=12)
-        # arcade.draw_text("Armor: 1337", start_x=self.center_x - 140, start_y=self.center_y - self.height + 310, font_size=12)
-
 
     def update_slot_positions(self, sprite_list, delta_x, delta_y):
         for sprite in sprite_list:
@@ -164,7 +160,7 @@ class Inventory(arcade.Sprite):
     def try_place_in_slot(self, slot_type, slot_sprites):
         for slot_sprite in slot_sprites:
             if self.grabbed_item.collides_with_sprite(slot_sprite):
-                slot_number_attr = 'slot_number' if slot_type == 'inventory' else 'equipment_slot_number'
+                slot_number_attr = 'slot_number' if slot_type == 'inventory' else 'equipment_slot_index'
                 slot_number = getattr(slot_sprite, slot_number_attr)
                 if slot_type == 'equipment':
                     slot_number += len(self.mapped_slots['inventory'])
@@ -190,8 +186,6 @@ class Inventory(arcade.Sprite):
         self.grabbed_item.center_x, self.grabbed_item.center_y = self.get_mapped_slot(self.grabbed_item.original_slot_index)
         self.item_list.append(self.grabbed_item)
         self.grabbed_item = None
-
-
 
     def update(self, window_width, window_height, pointer):
         delta_x = window_width - 211 - self.center_x
