@@ -144,7 +144,7 @@ class HomeView(arcade.View):
         else:
             self.close_all_windows()
             self.info_window = InfoWindow(
-                filename="assets/gui/info/blue_arcade_card.png", 
+                filename="assets/gui/info/blue_card.png", 
                 window_width=self.window.width,
                 window_height=self.window.height)
 
