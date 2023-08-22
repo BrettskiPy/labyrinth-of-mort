@@ -104,32 +104,25 @@ class InfoWindow(arcade.Sprite):
     def update_eye_center_position(self, mouse_x, mouse_y):
         # Calculate the angle between the eye globe center and the mouse pointer
         angle = atan2(mouse_y - self.eye_globe.center_y, mouse_x - self.eye_globe.center_x)
-        distance = 15
-        self.update_floating_eyes(mouse_x, mouse_y)
-        self.eye_center.center_x = self.eye_globe.center_x + cos(angle) * distance
-        self.eye_center.center_y = self.eye_globe.center_y + sin(angle) * distance
+        distance_to_cursor = ((self.eye_globe.center_x - mouse_x)**2 + (self.eye_globe.center_y - mouse_y)**2)**0.5
+        distance_to_pupil = 15
+
+        # Scale the pupil based on the distance to the cursor
+        max_distance = 300  # Adjust this value to your preference
+        self.pupil_scale_target = 1.75 - (min(distance_to_cursor, max_distance) / max_distance)
+
+        self.eye_center.center_x = self.eye_globe.center_x + cos(angle) * distance_to_pupil
+        self.eye_center.center_y = self.eye_globe.center_y + sin(angle) * distance_to_pupil
         self.pupil.center_x = self.eye_center.center_x
         self.pupil.center_y = self.eye_center.center_y
-        # Determine the current time
-        t = time.time() - self.start_time
-        
-        # Randomly decide to change the pupil state
-        if random.random() < 0.01:  # 1% chance per frame
-            self.pupil_state = random.choice([0, 1, 2])  # Normal, expand, or contract
-            self.pupil_scale_time = t
-
-        # Update the pupil scale based on the state
-        if self.pupil_state == 0:  # Normal
-            self.pupil_scale_target = 1
-        elif self.pupil_state == 1:  # Expand
-            self.pupil_scale_target = 1.5
-        elif self.pupil_state == 2:  # Contract
-            self.pupil_scale_target = .8
 
         # Smoothly transition to the target scale over 0.5 seconds
         transition_time = 0.5
-        progress = min((t - self.pupil_scale_time) / transition_time, 1)
+        progress = min((time.time() - self.start_time) / transition_time, 1)
         self.pupil.scale = self.pupil.scale + (self.pupil_scale_target - self.pupil.scale) * progress
+
+        self.update_floating_eyes(mouse_x, mouse_y)
+
 
     def update(self, window_width, window_height, mouse_x, mouse_y):
         delta_x = window_width - self.window_width
