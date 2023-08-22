@@ -109,7 +109,7 @@ class HomeView(arcade.View):
         self.info_window = None
 
         self.default_background = True
-        self.background = arcade.load_texture("assets/background/forest.png")
+        self.background = arcade.load_texture("assets/background/battleback4.png")
 
         self.camera_sprites = arcade.Camera(DEFAULT_SCREEN_WIDTH, DEFAULT_SCREEN_HEIGHT)
         self.camera_gui = arcade.Camera(DEFAULT_SCREEN_WIDTH, DEFAULT_SCREEN_HEIGHT)
@@ -144,7 +144,7 @@ class HomeView(arcade.View):
         else:
             self.close_all_windows()
             self.info_window = InfoWindow(
-                filename="assets/gui/info/blue_card.png", 
+                filename="assets/gui/info/blue_arcade_card.png", 
                 window_width=self.window.width,
                 window_height=self.window.height)
 

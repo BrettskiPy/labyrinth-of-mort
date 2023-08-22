@@ -11,9 +11,9 @@ class InfoWindow(arcade.Sprite):
         self.window_height = window_height
         self.center_x = self.window_width / 2
         self.center_y = self.window_height / 2
-        self.eye_globe = arcade.Sprite("assets/gui/info/blank_eye.png", scale=2)
-        self.eye_center = arcade.Sprite("assets/gui/info/eye_center.png", scale=2)
-        self.pupil = arcade.Sprite("assets/gui/info/pupil.png", scale=1)
+        self.eye_globe = arcade.Sprite("assets/gui/info/blank_eye.png", scale=1.3)
+        self.eye_center = arcade.Sprite("assets/gui/info/eye_center.png", scale=1.3)
+        self.pupil = arcade.Sprite("assets/gui/info/pupil.png", scale=.7)
         self.pupil_state = 0
         self.pupil_scale_target = 1
         self.pupil_scale_time = 0
@@ -34,8 +34,8 @@ class InfoWindow(arcade.Sprite):
 
     def update_eye_globe_position(self):
         # Position the centered sprite relative to the InfoWindow
-        self.eye_globe.center_x = self.center_x
-        self.eye_globe.center_y = self.center_y
+        self.eye_globe.center_x = self.center_x - 50
+        self.eye_globe.center_y = self.center_y + 38
 
     def update_eye_center_position(self, mouse_x, mouse_y):
         # Calculate the angle between the eye globe center and the mouse pointer
@@ -55,11 +55,11 @@ class InfoWindow(arcade.Sprite):
 
         # Update the pupil scale based on the state
         if self.pupil_state == 0:  # Normal
-            self.pupil_scale_target = 1.5
+            self.pupil_scale_target = 1
         elif self.pupil_state == 1:  # Expand
-            self.pupil_scale_target = 2.5
+            self.pupil_scale_target = 1.5
         elif self.pupil_state == 2:  # Contract
-            self.pupil_scale_target = 1.1
+            self.pupil_scale_target = .8
 
         # Smoothly transition to the target scale over 0.5 seconds
         transition_time = 0.5
