@@ -1,6 +1,6 @@
 import arcade
 import random
-
+from item import Item
 
 INV_OFFSET = 60
 
@@ -23,15 +23,6 @@ EQUIPMENT_SLOTS_CONFIG = [
     ("boots", -77,  20)
 ]
 
-class Item(arcade.Sprite):
-    def __init__(self, filename, scale=1, mapped_slot_position=None, slot_index=None):
-        super().__init__(filename, scale)
-        self.center_x, self.center_y = mapped_slot_position
-        self.slot_index = slot_index
-        self.equipment_slot_index = None
-        self.original_slot_index = slot_index
-        self.foo_stat = random.randint(1, 100)
-
 class Inventory(arcade.Sprite):
     def __init__(self, filename, window_width, window_height, scale=1):
         super().__init__(filename, scale)
@@ -48,6 +39,7 @@ class Inventory(arcade.Sprite):
         }
         self.map_slots()
         self.item_list = arcade.SpriteList()
+        self.item_data_window = arcade.Sprite("assets/gui/storage/item_data_window.png", scale=1)
 
     def add_new_item(self):
         available_slot = self.find_next_available_slot()
@@ -55,7 +47,8 @@ class Inventory(arcade.Sprite):
             new_item = Item(
                 filename=random.choice(["assets/test_item1.png", "assets/test_item2.png", "assets/test_item3.png"]),
                 slot_index=available_slot,
-                mapped_slot_position=self.mapped_slots['inventory'][available_slot]
+                mapped_slot_position=self.mapped_slots['inventory'][available_slot],
+                item_type=random.choice(["helmet", "necklace", "offhand", "chest"])
             )
             self.item_list.append(new_item)
         else:
@@ -116,9 +109,20 @@ class Inventory(arcade.Sprite):
             if hovered_item:
                 item = hovered_item[0]
                 x, y = item.center_x, item.center_y
-                stats_text = f"Foo Stat: {item.foo_stat}"
-                arcade.draw_rectangle_filled(x, y + 20, 100, 30, arcade.color.BLACK)
-                arcade.draw_text(stats_text, x - 45, y + 15, arcade.color.WHITE, font_size=12)
+
+                stats_text = f"Test Stat: {item.foo_stat}"
+                index_text = f"Index: {item.slot_index}"
+                item_type_text = f"Type: {item.item_type}"
+
+                # Update the sprite's position
+                self.item_data_window.center_x = x - 50
+                self.item_data_window.center_y = y + 118
+                self.item_data_window.draw()  # Draw the sprite
+
+                # Draw text on top of the sprite
+                arcade.draw_text(stats_text, x - 110, y + 200, arcade.color.WHITE, font_size=12, bold=True)
+                arcade.draw_text(index_text, x - 108, y + 180, arcade.color.WHITE, font_size=12, bold=True)
+                arcade.draw_text(item_type_text, x - 110, y + 160, arcade.color.WHITE, font_size=12, bold=True)
 
     def draw(self, control_key_pressed, pointer):
         super().draw()
@@ -162,11 +166,25 @@ class Inventory(arcade.Sprite):
             if self.grabbed_item.collides_with_sprite(slot_sprite):
                 slot_number_attr = 'slot_number' if slot_type == 'inventory' else 'equipment_slot_index'
                 slot_number = getattr(slot_sprite, slot_number_attr)
+
+                # Check for equipment slots and verify the item type
                 if slot_type == 'equipment':
                     slot_number += len(self.mapped_slots['inventory'])
+                    expected_equipment_type = EQUIPMENT_SLOTS_CONFIG[slot_number - len(self.mapped_slots['inventory'])][0]
+                    if self.grabbed_item.item_type != expected_equipment_type:
+                        continue  # Skip this slot if the item type doesn't match
 
                 existing_item = next((item for item in self.item_list if item.slot_index == slot_number), None)
 
+                # If we're trying to place an item in an equipment slot and the existing item type doesn't match, continue
+                if existing_item and slot_type == 'equipment' and existing_item.item_type != self.grabbed_item.item_type:
+                    continue
+
+                # If we're swapping between inventory and equipment and the types don't match, deny the swap
+                if existing_item and self.grabbed_item.original_slot_index < len(self.mapped_slots['inventory']) and existing_item.slot_index >= len(self.mapped_slots['inventory']) and existing_item.item_type != self.grabbed_item.item_type:
+                    continue
+
+                # If the slot is occupied, swap the items
                 if existing_item:
                     existing_item.slot_index = self.grabbed_item.original_slot_index
                     existing_item.center_x, existing_item.center_y = self.get_mapped_slot(existing_item.slot_index)
@@ -177,7 +195,7 @@ class Inventory(arcade.Sprite):
                 self.grabbed_item = None
                 return True
         return False
-
+    
     def get_mapped_slot(self, slot_index):
         return self.mapped_slots['inventory'][slot_index] if slot_index < len(self.mapped_slots['inventory']) else self.mapped_slots['equipment'][slot_index - len(self.mapped_slots['inventory'])]
     
@@ -204,7 +222,6 @@ class Inventory(arcade.Sprite):
             self.update_slot_positions(self.equipment_slot_sprites, delta_x, delta_y)
             self.update_item_positions(delta_x, delta_y)
             self.recalculate_slot_mappings()  # Recalculate the slot mappings
-
         self.handle_item_drag_and_drop(pointer)
         self.item_list.update()
 

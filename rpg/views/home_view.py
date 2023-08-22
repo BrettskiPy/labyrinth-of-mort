@@ -2,7 +2,6 @@ import arcade
 from pointer import Pointer
 from player import Player
 from storage import Inventory, Vault
-import random
 
 
 DEFAULT_SCREEN_WIDTH = 800
