@@ -5,6 +5,7 @@ class Pointer(arcade.Sprite):
     def __init__(self, filename, scale=1):
         super().__init__(filename, scale)
         self.left_click = False
+        self.right_click = False
         self.default_pointer = filename
         self.hover_pointer = "assets/pointers/finger_pointing.png"
         self.grab_pointer = "assets/pointers/finger_grabbing.png"

@@ -195,7 +195,43 @@ class Inventory(arcade.Sprite):
                 self.grabbed_item = None
                 return True
         return False
-    
+        
+    def handle_item_equip(self, pointer):
+        if not pointer.right_click:
+            return
+
+        collided_items = pointer.collides_with_list(self.item_list)
+        if collided_items:
+            clicked_item = collided_items[0]
+
+            # Check if the clicked item is in an equipment slot
+            if clicked_item.slot_index >= len(self.mapped_slots['inventory']):
+                # Find the next available inventory slot
+                available_slot = self.find_next_available_slot()
+                if available_slot is not None:
+                    clicked_item.slot_index = available_slot
+                    clicked_item.center_x, clicked_item.center_y = self.get_mapped_slot(available_slot)
+            else:
+                # Equip the item
+                slot_index = self.find_equipment_slot_for_item(clicked_item.item_type)
+                if slot_index is not None:
+                    existing_item = next((item for item in self.item_list if item.slot_index == slot_index), None)
+
+                    if existing_item:
+                        # Swap the items
+                        existing_item.slot_index = clicked_item.slot_index
+                        existing_item.center_x, existing_item.center_y = self.get_mapped_slot(existing_item.slot_index)
+
+                    clicked_item.slot_index = slot_index
+                    clicked_item.center_x, clicked_item.center_y = self.get_mapped_slot(slot_index)
+
+
+    def find_equipment_slot_for_item(self, item_type):
+        for index, (equipment_type, _, _) in enumerate(EQUIPMENT_SLOTS_CONFIG):
+            if equipment_type == item_type:
+                return len(self.mapped_slots['inventory']) + index
+        return None
+        
     def get_mapped_slot(self, slot_index):
         return self.mapped_slots['inventory'][slot_index] if slot_index < len(self.mapped_slots['inventory']) else self.mapped_slots['equipment'][slot_index - len(self.mapped_slots['inventory'])]
     

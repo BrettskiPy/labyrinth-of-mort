@@ -155,6 +155,10 @@ class HomeView(arcade.View):
                 window_height=self.window.height,
             )
 
+    def handle_right_click_event(self):
+        if self.inventory:
+            self.inventory.handle_item_equip(self.pointer)
+
     def handle_vault_event(self):
         if self.vault:
             self.vault = None
@@ -190,6 +194,10 @@ class HomeView(arcade.View):
         if button == arcade.MOUSE_BUTTON_LEFT:
             self.handle_button_press_events()
             self.pointer.left_click = True
+
+        elif button == arcade.MOUSE_BUTTON_RIGHT:
+            self.handle_right_click_event()
+            self.pointer.right_click = True
 
     def on_mouse_release(self, x, y, button, modifiers):
         if button == arcade.MOUSE_BUTTON_LEFT:
