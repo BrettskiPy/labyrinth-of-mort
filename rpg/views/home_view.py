@@ -8,6 +8,65 @@ DEFAULT_SCREEN_WIDTH = 800
 DEFAULT_SCREEN_HEIGHT = 600
 
 
+
+from math import atan2, sin, cos
+
+class InfoWindow(arcade.Sprite):
+    def __init__(self, filename, window_width, window_height, scale=2):
+        super().__init__(filename, scale)
+        self.window_width = window_width
+        self.window_height = window_height
+        self.center_x = self.window_width / 2
+        self.center_y = self.window_height / 2
+        self.eye_globe = arcade.Sprite("assets/gui/info/blank_eye.png", scale=2)
+        self.eye_center = arcade.Sprite("assets/gui/info/eye_center.png", scale=2)
+        self.update_eye_globe_position()
+        self.update_eye_center_position(0, 0)  # Initial position
+
+    def draw(self):
+        super().draw()
+        self.eye_globe.draw()
+        self.eye_center.draw()
+        top_text_y = self.center_y + self.height / 2 - 40 
+        bottom_text_y = self.center_y - self.height / 2 + 40
+        arcade.draw_text("Coded by BrettskiPy", self.center_x, top_text_y, arcade.color.WHITE, 16, anchor_x="center", bold=True)
+        arcade.draw_text("With special thanks to", self.center_x, bottom_text_y, arcade.color.WHITE, 16, anchor_x="center", bold=True)
+        arcade.draw_text("the Python Arcade Library", self.center_x, bottom_text_y - 20, arcade.color.WHITE, 16, anchor_x="center", bold=True)
+
+
+    def update_eye_globe_position(self):
+        # Position the centered sprite relative to the InfoWindow
+        self.eye_globe.center_x = self.center_x
+        self.eye_globe.center_y = self.center_y
+
+    def update_eye_center_position(self, mouse_x, mouse_y):
+        # Calculate the angle between the eye globe center and the mouse pointer
+        angle = atan2(mouse_y - self.eye_globe.center_y, mouse_x - self.eye_globe.center_x)
+
+        # Set the distance from the eye globe center to the eye center
+        distance = 10  # You can adjust this value
+
+        # Calculate the new position of the eye center
+        self.eye_center.center_x = self.eye_globe.center_x + cos(angle) * distance
+        self.eye_center.center_y = self.eye_globe.center_y + sin(angle) * distance
+
+    def update(self, window_width, window_height, mouse_x, mouse_y):
+        delta_x = window_width - self.window_width
+        delta_y = window_height - self.window_height
+
+        # Check if the window has been resized
+        if delta_x != 0 or delta_y != 0:
+            self.window_width = window_width
+            self.window_height = window_height
+            self.center_x = self.window_width / 2
+            self.center_y = self.window_height / 2
+            self.update_eye_globe_position()
+
+        # Update the eye center position to follow the mouse pointer
+        self.update_eye_center_position(mouse_x, mouse_y)
+
+
+
 class HomeButtonBar(arcade.Sprite):
     def __init__(self, filename, offset_x, scale=1):
         super().__init__(filename, scale)
@@ -104,6 +163,7 @@ class HomeView(arcade.View):
         self.player = Player(filename="assets/player/base/human.png")
         self.inventory = None
         self.vault = None
+        self.info_window = None
 
         self.default_background = True
         self.background = arcade.load_texture("assets/background/forest.png")
@@ -123,6 +183,10 @@ class HomeView(arcade.View):
         self.camera_gui.use()
         self.home_button_bar.draw()
         self.button_list.draw()
+
+        if self.info_window:
+            self.info_window.draw()
+
         if self.inventory:
             self.inventory.draw(self.control_key_pressed, self.pointer)
 
@@ -132,6 +196,16 @@ class HomeView(arcade.View):
         self.pointer.draw()
         # self.pointer.draw_hit_box(arcade.color.RED, line_thickness=1)
 
+    def handle_info_event(self):
+        if self.info_window:
+            self.info_window = None
+        else:
+            self.close_all_windows()
+            self.info_window = InfoWindow(
+                filename="assets/gui/info/blue_card.png", 
+                window_width=self.window.width,
+                window_height=self.window.height)
+
     def toggle_button_press(self, button):
         if button.pressed:
             button.pressed = False
@@ -140,15 +214,16 @@ class HomeView(arcade.View):
                 other_button.pressed = False
             button.pressed = True
 
-    def close_all_storage(self):
+    def close_all_windows(self):
         self.inventory = None
         self.vault = None
+        self.info_window = None 
 
     def handle_inventory_event(self):
         if self.inventory:
             self.inventory = None
         else:
-            self.close_all_storage()
+            self.close_all_windows()
             self.inventory = Inventory(
                 filename="assets/gui/storage/inventory.png",
                 window_width=self.window.width,
@@ -163,7 +238,7 @@ class HomeView(arcade.View):
         if self.vault:
             self.vault = None
         else:
-            self.close_all_storage()
+            self.close_all_windows()
             self.vault = Vault(
                 filename="assets/gui/storage/vault.png",
                 center_x=self.window.width,
@@ -185,6 +260,7 @@ class HomeView(arcade.View):
             event_handlers = {
                 "inventory": self.handle_inventory_event,
                 "vault": self.handle_vault_event,
+                "info": self.handle_info_event, # Add this line
             }
             event_handler = event_handlers.get(clicked_button.reference)
             if event_handler:
@@ -225,7 +301,12 @@ class HomeView(arcade.View):
 
         if self.vault:
             self.vault.update(self.window.width, self.window.height)
-
+        
+        if self.info_window:  # Add this block
+            mouse_x = self.window._mouse_x
+            mouse_y = self.window._mouse_y
+            self.info_window.update(self.window.width, self.window.height, mouse_x, mouse_y)
+    
     def on_resize(self, width, height):
         self.camera_sprites.resize(int(width), int(height))
         self.camera_gui.resize(int(width), int(height))
