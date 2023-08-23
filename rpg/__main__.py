@@ -1,11 +1,6 @@
 import arcade
-from views.home_view import HomeView
-
-SPRITE_SCALING = 0.5
-
-DEFAULT_SCREEN_WIDTH = 800
-DEFAULT_SCREEN_HEIGHT = 600
-SCREEN_TITLE = "Labyrinth of Mort"
+from views.intro_view import IntroView
+from constants import DEFAULT_SCREEN_WIDTH, DEFAULT_SCREEN_HEIGHT, SCREEN_TITLE
 
 
 class Window(arcade.Window):
@@ -16,8 +11,8 @@ class Window(arcade.Window):
 
 def main():
     window = Window(DEFAULT_SCREEN_WIDTH, DEFAULT_SCREEN_HEIGHT, SCREEN_TITLE)
-    home_view = HomeView()
-    window.show_view(home_view)
+    intro_view = IntroView()
+    window.show_view(intro_view)
     arcade.run()
 
 

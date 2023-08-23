@@ -3,11 +3,7 @@ from pointer import Pointer
 from player import Player
 from storage import Inventory, Vault
 from info_window import InfoWindow
-
-
-DEFAULT_SCREEN_WIDTH = 800
-DEFAULT_SCREEN_HEIGHT = 600
-
+from constants import DEFAULT_SCREEN_WIDTH, DEFAULT_SCREEN_HEIGHT
 
 
 class HomeButtonBar(arcade.Sprite):
@@ -144,9 +140,10 @@ class HomeView(arcade.View):
         else:
             self.close_all_windows()
             self.info_window = InfoWindow(
-                filename="assets/gui/info/blue_card.png", 
+                filename="assets/gui/info/blue_card.png",
                 window_width=self.window.width,
-                window_height=self.window.height)
+                window_height=self.window.height,
+            )
 
     def toggle_button_press(self, button):
         if button.pressed:
@@ -159,7 +156,7 @@ class HomeView(arcade.View):
     def close_all_windows(self):
         self.inventory = None
         self.vault = None
-        self.info_window = None 
+        self.info_window = None
 
     def handle_inventory_event(self):
         if self.inventory:
@@ -190,19 +187,23 @@ class HomeView(arcade.View):
     def update_pointer_image_from_event(self):
         if self.inventory and self.inventory.grabbed_item:
             self.pointer.update_pointer_image("grab")
-        elif self.inventory and self.pointer.collides_with_list(self.inventory.item_list):
+        elif self.inventory and self.pointer.collides_with_list(
+            self.inventory.item_list
+        ):
             self.pointer.update_pointer_image("hover")
         else:
             self.pointer.update_pointer_image("default")
 
     def handle_button_press_events(self):
-        if button := arcade.check_for_collision_with_list(self.pointer, self.button_list):
+        if button := arcade.check_for_collision_with_list(
+            self.pointer, self.button_list
+        ):
             clicked_button = button[0]
             self.toggle_button_press(clicked_button)
             event_handlers = {
                 "inventory": self.handle_inventory_event,
                 "vault": self.handle_vault_event,
-                "info": self.handle_info_event, # Add this line
+                "info": self.handle_info_event,  # Add this line
             }
             event_handler = event_handlers.get(clicked_button.reference)
             if event_handler:
@@ -243,11 +244,13 @@ class HomeView(arcade.View):
 
         if self.vault:
             self.vault.update(self.window.width, self.window.height)
-        
+
         if self.info_window:  # Add this block
             mouse_x = self.window._mouse_x
             mouse_y = self.window._mouse_y
-            self.info_window.update(self.window.width, self.window.height, mouse_x, mouse_y)
-    
+            self.info_window.update(
+                self.window.width, self.window.height, mouse_x, mouse_y
+            )
+
     def on_resize(self, width, height):
         self.camera_sprites.resize(int(width), int(height))

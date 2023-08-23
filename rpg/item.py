@@ -1,8 +1,16 @@
 import arcade
 import random
 
+
 class Item(arcade.Sprite):
-    def __init__(self, filename, scale=1, mapped_slot_position=None, slot_index=None, item_type=None):
+    def __init__(
+        self,
+        filename,
+        scale=1,
+        mapped_slot_position=None,
+        slot_index=None,
+        item_type=None,
+    ):
         super().__init__(filename, scale)
         self.center_x, self.center_y = mapped_slot_position
         self.slot_index = slot_index
