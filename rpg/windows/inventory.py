@@ -2,10 +2,11 @@ import arcade
 import random
 from item import Item
 
-INV_OFFSET = 60
+X_OFFSET = 212
+Y_OFFSET = 61
 
-BASE_X_OFFSET = 22
-BASE_Y_OFFSET = -14
+SLOT_X_OFFSET = 22
+SLOT_Y_OFFSET = -14
 SLOT_SIZE = 32
 SLOT_ROW_OFFSET_X = SLOT_SIZE + 5
 SLOT_ROW_OFFSET_Y = SLOT_SIZE + 4
@@ -30,8 +31,8 @@ class Inventory(arcade.Sprite):
         self.open = False
         self.item_glabbed = False
         self.grabbed_item = None
-        self.center_x = window_width - 211
-        self.center_y = window_height / 2 - INV_OFFSET
+        self.center_x = window_width - X_OFFSET
+        self.center_y = window_height / 2 - Y_OFFSET
         self.inventory_slot_sprites = arcade.SpriteList()
         self.equipment_slot_sprites = arcade.SpriteList()
         self.mapped_slots = {"inventory": [], "equipment": []}
@@ -76,8 +77,8 @@ class Inventory(arcade.Sprite):
         self.map_equipment_slots()
 
     def map_inventory_slots(self):
-        base_x = self.center_x + BASE_X_OFFSET
-        base_y = self.center_y + BASE_Y_OFFSET
+        base_x = self.center_x + SLOT_X_OFFSET
+        base_y = self.center_y + SLOT_Y_OFFSET
         slot_number = 0
         for row in range(6):
             for slot in range(SLOTS_PER_ROW):
@@ -262,9 +263,7 @@ class Inventory(arcade.Sprite):
         if collided_items:
             clicked_item = collided_items[0]
 
-            # Check if the clicked item is in an equipment slot
             if clicked_item.slot_index >= len(self.mapped_slots["inventory"]):
-                # Find the next available inventory slot
                 available_slot = self.find_next_available_slot()
                 if available_slot is not None:
                     clicked_item.slot_index = available_slot
@@ -326,28 +325,16 @@ class Inventory(arcade.Sprite):
         self.grabbed_item = None
 
     def update(self, window_width, window_height, pointer):
-        delta_x = window_width - 211 - self.center_x
-        delta_y = (window_height / 2 - INV_OFFSET) - self.center_y
+        delta_x = window_width - X_OFFSET - self.center_x
+        delta_y = (window_height / 2 - Y_OFFSET) - self.center_y
 
         # Check if the window has been resized
         if delta_x != 0 or delta_y != 0:
-            self.center_x = window_width - 211
-            self.center_y = window_height / 2 - INV_OFFSET
+            self.center_x = window_width - X_OFFSET
+            self.center_y = window_height / 2 - Y_OFFSET
             self.update_slot_positions(self.inventory_slot_sprites, delta_x, delta_y)
             self.update_slot_positions(self.equipment_slot_sprites, delta_x, delta_y)
             self.update_item_positions(delta_x, delta_y)
-            self.recalculate_slot_mappings()  # Recalculate the slot mappings
+            self.recalculate_slot_mappings()
         self.handle_item_drag_and_drop(pointer)
         self.item_list.update()
-
-
-class Vault(arcade.Sprite):
-    def __init__(self, filename, center_x, center_y, scale=1):
-        super().__init__(filename, scale)
-        self.open = False
-        self.center_x = center_x - 249
-        self.center_y = center_y / 2 + 10
-
-    def update(self, window_pos_x, window_pos_y):
-        self.center_x = window_pos_x - 249
-        self.center_y = window_pos_y / 2 + 10
