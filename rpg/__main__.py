@@ -1,6 +1,6 @@
 import arcade
+from constants import DEFAULT_SCREEN_HEIGHT, DEFAULT_SCREEN_WIDTH, SCREEN_TITLE
 from views.intro_view import IntroView
-from constants import DEFAULT_SCREEN_WIDTH, DEFAULT_SCREEN_HEIGHT, SCREEN_TITLE
 
 
 class Window(arcade.Window):

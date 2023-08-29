@@ -1,5 +1,6 @@
-import arcade
 import random
+
+import arcade
 from item import Item
 
 X_OFFSET = 212

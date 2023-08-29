@@ -1,5 +1,6 @@
-from .home_view import HomeView
 import arcade
+
+from .home_view import HomeView
 
 
 class IntroView(arcade.View):

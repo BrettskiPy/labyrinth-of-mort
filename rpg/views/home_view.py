@@ -1,11 +1,11 @@
 import arcade
-from pointer import Pointer
+from constants import DEFAULT_SCREEN_HEIGHT, DEFAULT_SCREEN_WIDTH
 from player import Player
+from pointer import Pointer
+from windows.dungeon import Dungeon
+from windows.info import InfoWindow
 from windows.inventory import Inventory
 from windows.vault import Vault
-from windows.info import InfoWindow
-from windows.dungeon import Dungeon
-from constants import DEFAULT_SCREEN_WIDTH, DEFAULT_SCREEN_HEIGHT
 
 
 class HomeButtonBar(arcade.Sprite):
@@ -111,7 +111,125 @@ class HomeView(arcade.View):
         self.background = arcade.load_texture("assets/background/battleback4.png")
 
         self.camera_sprites = arcade.Camera(DEFAULT_SCREEN_WIDTH, DEFAULT_SCREEN_HEIGHT)
-        self.camera_gui = arcade.Camera(DEFAULT_SCREEN_WIDTH, DEFAULT_SCREEN_HEIGHT)
+
+    def toggle_button_press(self, button):
+        if button.pressed:
+            button.pressed = False
+        else:
+            for other_button in self.button_list:
+                other_button.pressed = False
+            button.pressed = True
+
+    def close_all_windows(self):
+        self.inventory_window = None
+        self.vault_window = None
+        self.dungeon_window = None
+        self.info_window = None
+
+    # ------------------------------------------------ Events ----------------------------------------------------------------
+
+    def handle_inventory_event(self):
+        if self.inventory_window:
+            self.inventory_window = None
+        else:
+            self.close_all_windows()
+            self.inventory_window = Inventory(
+                filename="assets/gui/storage/inventory.png",
+                window_width=self.window.width,
+                window_height=self.window.height,
+            )
+
+    def handle_vault_event(self):
+        if self.vault_window:
+            self.vault_window = None
+        else:
+            self.close_all_windows()
+            self.vault_window = Vault(
+                filename="assets/gui/storage/vault.png",
+                center_x=self.window.width,
+                center_y=self.window.height,
+            )
+
+    def handle_dungeon_event(self):
+        if self.dungeon_window:
+            self.dungeon_window = None
+        else:
+            self.close_all_windows()
+            self.dungeon_window = Dungeon(
+                filename="assets/gui/dungeon/dungeon.png",
+                center_x=self.window.width,
+                center_y=self.window.height,
+            )
+            print("open dungeon window")
+
+    def handle_info_event(self):
+        if self.info_window:
+            self.info_window = None
+        else:
+            self.close_all_windows()
+            self.info_window = InfoWindow(
+                filename="assets/gui/info/blue_card.png",
+                window_width=self.window.width,
+                window_height=self.window.height,
+            )
+
+    def right_click_event(self):
+        if self.inventory_window:
+            self.inventory_window.handle_item_equip(self.pointer)
+
+    def handle_button_press_events(self):
+        if button := arcade.check_for_collision_with_list(
+            self.pointer, self.button_list
+        ):
+            clicked_button = button[0]
+            self.toggle_button_press(clicked_button)
+            event_handlers = {
+                "inventory": self.handle_inventory_event,
+                "vault": self.handle_vault_event,
+                "dungeon": self.handle_dungeon_event,
+                "info": self.handle_info_event,
+            }
+            event_handler = event_handlers.get(clicked_button.reference)
+            if event_handler:
+                event_handler()
+
+    def update_pointer_image(self):
+        if self.inventory_window and self.inventory_window.grabbed_item:
+            self.pointer.update_pointer_image("grab")
+        elif self.inventory_window and self.pointer.collides_with_list(
+            self.inventory_window.item_list
+        ):
+            self.pointer.update_pointer_image("hover")
+        else:
+            self.pointer.update_pointer_image("default")
+
+    # ------------------------------------------------ Core Arcade Logic ----------------------------------------------------------------
+
+    def on_mouse_press(self, x, y, button, modifiers):
+        if button == arcade.MOUSE_BUTTON_LEFT:
+            self.handle_button_press_events()
+            self.pointer.left_click = True
+
+        elif button == arcade.MOUSE_BUTTON_RIGHT:
+            self.right_click_event()
+            self.pointer.right_click = True
+
+    def on_mouse_release(self, x, y, button, modifiers):
+        if button == arcade.MOUSE_BUTTON_LEFT:
+            self.pointer.left_click = False
+
+    def on_key_press(self, key, modifiers):
+        if key == arcade.key.A:
+            self.inventory_window.add_new_item()
+        if key == arcade.key.LCTRL:
+            self.control_key_pressed = True
+
+    def on_key_release(self, key, modifiers):
+        if key == arcade.key.LCTRL:
+            self.control_key_pressed = False
+
+    def on_resize(self, width, height):
+        self.camera_sprites.resize(int(width), int(height))
 
     def on_draw(self):
         self.clear()
@@ -140,124 +258,12 @@ class HomeView(arcade.View):
         self.pointer.draw()
         # self.pointer.draw_hit_box(arcade.color.RED, line_thickness=1)
 
-    def handle_info_event(self):
-        if self.info_window:
-            self.info_window = None
-        else:
-            self.close_all_windows()
-            self.info_window = InfoWindow(
-                filename="assets/gui/info/blue_card.png",
-                window_width=self.window.width,
-                window_height=self.window.height,
-            )
-
-    def toggle_button_press(self, button):
-        if button.pressed:
-            button.pressed = False
-        else:
-            for other_button in self.button_list:
-                other_button.pressed = False
-            button.pressed = True
-
-    def close_all_windows(self):
-        self.inventory_window = None
-        self.vault_window = None
-        self.dungeon_window = None
-        self.info_window = None
-
-    def handle_inventory_event(self):
-        if self.inventory_window:
-            self.inventory_window = None
-        else:
-            self.close_all_windows()
-            self.inventory_window = Inventory(
-                filename="assets/gui/storage/inventory.png",
-                window_width=self.window.width,
-                window_height=self.window.height,
-            )
-
-    def handle_right_click_event(self):
-        if self.inventory_window:
-            self.inventory_window.handle_item_equip(self.pointer)
-
-    def handle_vault_event(self):
-        if self.vault_window:
-            self.vault_window = None
-        else:
-            self.close_all_windows()
-            self.vault_window = Vault(
-                filename="assets/gui/storage/vault.png",
-                center_x=self.window.width,
-                center_y=self.window.height,
-            )
-
-    def handle_dungeon_event(self):
-        if self.dungeon_window:
-            self.dungeon_window = None
-        else:
-            self.close_all_windows()
-            self.dungeon_window = Dungeon(
-                filename="assets/gui/storage/vault.png",
-                center_x=self.window.width,
-                center_y=self.window.height,
-            )
-            print("open dungeon window")
-
-    def update_pointer_image_from_event(self):
-        if self.inventory_window and self.inventory_window.grabbed_item:
-            self.pointer.update_pointer_image("grab")
-        elif self.inventory_window and self.pointer.collides_with_list(
-            self.inventory_window.item_list
-        ):
-            self.pointer.update_pointer_image("hover")
-        else:
-            self.pointer.update_pointer_image("default")
-
-    def handle_button_press_events(self):
-        if button := arcade.check_for_collision_with_list(
-            self.pointer, self.button_list
-        ):
-            clicked_button = button[0]
-            self.toggle_button_press(clicked_button)
-            event_handlers = {
-                "inventory": self.handle_inventory_event,
-                "vault": self.handle_vault_event,
-                "dungeon": self.handle_dungeon_event,
-                "info": self.handle_info_event,
-            }
-            event_handler = event_handlers.get(clicked_button.reference)
-            if event_handler:
-                event_handler()
-
-    def on_mouse_press(self, x, y, button, modifiers):
-        if button == arcade.MOUSE_BUTTON_LEFT:
-            self.handle_button_press_events()
-            self.pointer.left_click = True
-
-        elif button == arcade.MOUSE_BUTTON_RIGHT:
-            self.handle_right_click_event()
-            self.pointer.right_click = True
-
-    def on_mouse_release(self, x, y, button, modifiers):
-        if button == arcade.MOUSE_BUTTON_LEFT:
-            self.pointer.left_click = False
-
-    def on_key_press(self, key, modifiers):
-        if key == arcade.key.A:
-            self.inventory_window.add_new_item()
-        if key == arcade.key.LCTRL:
-            self.control_key_pressed = True
-
-    def on_key_release(self, key, modifiers):
-        if key == arcade.key.LCTRL:
-            self.control_key_pressed = False
-
     def on_update(self, delta_time):
         self.pointer.update(self.window._mouse_x, self.window._mouse_y)
         self.player.update()
         self.home_button_bar.update(self.window.width, self.window.height)
         self.button_list.update()
-        self.update_pointer_image_from_event()
+        self.update_pointer_image()
 
         if self.inventory_window:
             self.inventory_window.update(
@@ -277,6 +283,3 @@ class HomeView(arcade.View):
                 self.window._mouse_x,
                 self.window._mouse_y,
             )
-
-    def on_resize(self, width, height):
-        self.camera_sprites.resize(int(width), int(height))

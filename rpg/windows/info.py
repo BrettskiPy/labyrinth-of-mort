@@ -1,7 +1,8 @@
-import arcade
-import time
 import random
-from math import sin, atan2, cos
+import time
+from math import atan2, cos, sin
+
+import arcade
 
 
 class FloatingEye:

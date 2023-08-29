@@ -1,5 +1,6 @@
-import arcade
 import random
+
+import arcade
 
 
 class Item(arcade.Sprite):
