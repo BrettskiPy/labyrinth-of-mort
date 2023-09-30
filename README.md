@@ -7,7 +7,7 @@ A concept RPG demo created with the Python Arcade library.
 ## Equip and unequip with a mapped inventory 
 ![right_click_equip](https://github.com/BrettskiPy/labyrinth-of-mort/assets/30988215/12341617-7e27-40fc-b838-e225358f9644)
 
-## Item placement with snap to grid and positional lock upon invalid placement
+## Item placement with snap to grid and positional snapback upon invalid placement
 ![item_placement](https://github.com/BrettskiPy/labyrinth-of-mort/assets/30988215/4a60e50d-6c90-4358-a5f8-b64a15c12e44)
 
 ## Absolutely cursed features
