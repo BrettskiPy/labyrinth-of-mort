@@ -211,8 +211,8 @@ class HomeView(arcade.View):
             self.pointer.left_click = True
 
         elif button == arcade.MOUSE_BUTTON_RIGHT:
-            self.right_click_event()
             self.pointer.right_click = True
+            self.right_click_event()
 
     def on_mouse_release(self, x, y, button, modifiers):
         if button == arcade.MOUSE_BUTTON_LEFT:
